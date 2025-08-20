@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
-import useEmblaCarousel from 'embla-carousel-react';
+import { useState, useRef, useEffect } from "react";
+import { Send } from "lucide-react";
+import useEmblaCarousel from "embla-carousel-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,10 +10,26 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Sample best dishes data
 const bestDishes = [
-  { id: 1, name: "Signature Pasta", image: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601" },
-  { id: 2, name: "Wagyu Steak", image: "https://images.unsplash.com/photo-1546039907-7fa05f864c02" },
-  { id: 3, name: "Truffle Risotto", image: "https://images.unsplash.com/photo-1534422298391-e4f8c172789a" },
-  { id: 4, name: "Seafood Platter", image: "https://images.unsplash.com/photo-1559742811-822873691df8" },
+  {
+    id: 1,
+    name: "Signature Pasta",
+    image: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601",
+  },
+  {
+    id: 2,
+    name: "Wagyu Steak",
+    image: "https://images.unsplash.com/photo-1546039907-7fa05f864c02",
+  },
+  {
+    id: 3,
+    name: "Truffle Risotto",
+    image: "https://images.unsplash.com/photo-1534422298391-e4f8c172789a",
+  },
+  {
+    id: 4,
+    name: "Seafood Platter",
+    image: "https://images.unsplash.com/photo-1559742811-822873691df8",
+  },
 ];
 
 interface Message {
@@ -28,7 +44,31 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   
+
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [preferences, setPreferences] = useState({});
+
+useEffect(() => {
+  try {
+    const storedMessages = localStorage.getItem("chatMessages");
+    if (storedMessages) {
+      const parsed = JSON.parse(storedMessages);
+      if (Array.isArray(parsed)) {
+        setMessages(parsed);
+      }
+    }
+  } catch (err) {
+    console.error("Failed to parse stored messages:", err);
+    // Don't auto-remove unless data is really corrupted
+  }
+}, []);
+
+useEffect(() => {
+  if (messages.length > 0) {
+    localStorage.setItem("chatMessages", JSON.stringify(messages));
+  }
+}, [messages]);
+
 
   useEffect(() => {
     if (emblaApi) {
@@ -57,15 +97,15 @@ export default function Home() {
       timestamp: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
+      const response = await fetch("/api/chat", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ message: inputMessage }),
       });
@@ -78,9 +118,9 @@ export default function Home() {
         timestamp: data.timestamp,
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error("Failed to send message:", error);
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +130,9 @@ export default function Home() {
     <main className="min-h-screen bg-background flex flex-col">
       {/* Welcome Section */}
       <section className="text-center p-4">
-        <h1 className="text-3xl font-bold text-primary">Welcome to Our Restaurant</h1>
+        <h1 className="text-3xl font-bold text-primary">
+          Welcome to Our Restaurant
+        </h1>
       </section>
 
       {/* Best Dishes Section */}
@@ -99,7 +141,10 @@ export default function Home() {
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex">
             {bestDishes.map((dish) => (
-              <div key={dish.id} className="flex-[0_0_100%] min-w-0 pl-4 first:pl-0">
+              <div
+                key={dish.id}
+                className="flex-[0_0_100%] min-w-0 pl-4 first:pl-0"
+              >
                 <Card className="overflow-hidden">
                   <div className="aspect-video relative">
                     <img
@@ -121,20 +166,26 @@ export default function Home() {
       {/* Chat Interface */}
       <section className="flex-1 flex flex-col p-4 max-h-[60vh]">
         <div className="text-center mb-4">
-          <h2 className="text-xl font-semibold text-primary">Confused? Ask our digital waiter!</h2>
+          <h2 className="text-xl font-semibold text-primary">
+            Confused? Ask our digital waiter!
+          </h2>
         </div>
-        <ScrollArea className="flex-1 p-4 rounded-lg border">
+
+        {/* Scrollable Chat Area */}
+        <ScrollArea className="flex-1 p-4 rounded-lg border overflow-y-auto">
           <div className="space-y-4">
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${
+                  message.isUser ? "justify-end" : "justify-start"
+                }`}
               >
                 <div
                   className={`max-w-[80%] p-3 rounded-lg ${
                     message.isUser
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
                   }`}
                 >
                   <p>{message.text}</p>
@@ -148,14 +199,31 @@ export default function Home() {
           </div>
         </ScrollArea>
 
+        {/* Chat Input + Actions */}
         <div className="flex gap-2 mt-4">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setMessages([]);
+              localStorage.removeItem("chatMessages");
+
+              // Scroll to bottom (now works because ScrollArea has overflow)
+              setTimeout(() => {
+                chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+              }, 0);
+            }}
+          >
+            Clear Chat
+          </Button>
+
           <Input
             placeholder="Type your message..."
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             disabled={isLoading}
           />
+
           <Button
             onClick={handleSendMessage}
             disabled={isLoading}
